@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MockLlm } from '../src/responder/llm.js';
 import { Responder } from '../src/responder/responder.js';
 import type { Persona } from '../src/responder/persona.js';
-import { msg, thread } from './helpers.js';
+import { me, msg, thread } from './helpers.js';
 
 const persona: Persona = { name: 'Bot Owner', firstName: 'Bot', headline: 'Engineer', facts: [] };
 
@@ -48,5 +48,21 @@ describe('Responder', () => {
     expect(user).toContain('<conversation>');
     expect(user).toContain('[file: deck.pdf]');
     expect(user).toMatch(/tags=\[.*file/);
+  });
+});
+
+describe('userPrompt name usage', () => {
+  it("tells the model to skip the name if a recent reply used it", async () => {
+    const llm = new MockLlm(() => 'ok!');
+    const b = [msg('and you?')];
+    const t = thread([msg('hey'), me("Hey Test, how's it going?"), ...b]);
+    await new Responder(llm, persona).respond({ thread: t, burst: b });
+    expect(llm.calls[0]!.req.user).toMatch(/Don't use their name \(Test\)/);
+  });
+  it('allows the name when recent replies did not use it', async () => {
+    const llm = new MockLlm(() => 'ok!');
+    const b = [msg('and you?')];
+    await new Responder(llm, persona).respond({ thread: thread([msg('hey'), me('Hi! Good, you?'), ...b]), burst: b });
+    expect(llm.calls[0]!.req.user).not.toMatch(/Don't use their name/);
   });
 });

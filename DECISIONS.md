@@ -27,3 +27,6 @@ One line each. Newest at the bottom of each section.
 - Anthropic auth via `ant auth login` profile (no key in .env); an empty ANTHROPIC_API_KEY is treated as unset.
 - Replies are inserted in one go and checked in the composer before Send: key-by-key typing got cut off mid-reply live.
 - Phase 4 verified live: "hey" answered in ~9-10 s, image+link burst answered once (vision ok), 3 quick messages -> 1 reply (~13 s from first), restart -> no duplicates.
+- Phase 5 tuned live on 16 unusual messages (emoji, FR/ES, unknowable questions, bot question, injection, rude, PDF, wall of text, ".", repeats, connect-someone request).
+- The model kept pushing an old topic and overused the first name: the prompt now says to follow the latest topic, and code tells it to skip the name if either of its last two replies used it.
+- Neutral grammatical gender about the persona in FR/ES etc. (the persona's gender is unknown).
