@@ -32,6 +32,11 @@ export class AnthropicLlm implements LlmProvider {
     this.client = new Anthropic({ apiKey, timeout: timeoutMs, maxRetries: 0 });
   }
 
+  /** Cheap credentials check (no tokens): catches an expired login or missing credit before a message arrives. */
+  async check(): Promise<void> {
+    await this.client.models.retrieve(this.model);
+  }
+
   async generate(req: LlmRequest, { fallback }: { fallback: boolean }): Promise<string> {
     const model = fallback ? this.fallbackModel : this.model;
     const content: Anthropic.Beta.BetaContentBlockParam[] = [

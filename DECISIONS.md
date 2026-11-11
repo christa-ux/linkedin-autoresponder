@@ -30,3 +30,7 @@ One line each. Newest at the bottom of each section.
 - Phase 5 tuned live on 16 unusual messages (emoji, FR/ES, unknowable questions, bot question, injection, rude, PDF, wall of text, ".", repeats, connect-someone request).
 - The model kept pushing an old topic and overused the first name: the prompt now says to follow the latest topic, and code tells it to skip the name if either of its last two replies used it.
 - Neutral grammatical gender about the persona in FR/ES etc. (the persona's gender is unknown).
+- Phase 6: watchdog reloads a tab stale for 2 min and exits at 4 min so pm2 restarts everything; browser close, uncaught exceptions -> exit(1) -> pm2.
+- caffeinate is spawned by the bot itself (tied to its PID), so "keep awake" can't be forgotten.
+- Claude API credentials checked at start and every 30 min via models.retrieve (no tokens spent); failure -> loud log + macOS notification.
+- Messaging tab reloaded every 30 min to keep memory flat over 24 h.
