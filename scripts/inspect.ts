@@ -1,9 +1,4 @@
-/**
- * Debug helper: checks every selector in src/browser/selectors.ts against the live pages and
- * prints only COUNTS and CSS classes (no names, no message text) so output is safe to share.
- * `npm run inspect -- --dump` also writes HTML + screenshots to git-ignored screenshots/.
- * Stop the bot first: a persistent profile can only be opened by one browser at a time.
- */
+/** Prints selector match counts only (no names or text). --dump saves HTML/PNG to screenshots/. Stop the bot first. */
 import fs from 'node:fs';
 import type { Page } from 'playwright';
 import { config } from '../src/config.js';
@@ -34,7 +29,6 @@ async function save(p: Page, name: string) {
   console.log(`  dumped screenshots/${name}.{html,png}`);
 }
 
-// Invitations
 await page.goto(URLS.invitations, { waitUntil: 'domcontentloaded' });
 assertLoggedIn(page);
 await page.waitForTimeout(4000);
@@ -43,10 +37,9 @@ const accepts = page.getByRole('button', { name: SEL.acceptButtonName });
 console.log(`${(await accepts.count()) > 0 ? '✓' : '·'} accept buttons (role)  ${await accepts.count()}`);
 await save(page, 'invitations');
 
-// Messaging list + first thread
 await page.goto(URLS.messaging, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(5000);
-await report(page, 'Messaging list', ['conversationItem', 'conversationLink', 'conversationUnread', 'conversationPreview', 'conversationNames']);
+await report(page, 'Messaging list', ['conversationItem', 'conversationUnread', 'conversationPreview', 'conversationNames']);
 await save(page, 'messaging');
 await report(page, 'Open thread', [
   'messageList', 'messageEvent', 'eventItem', 'eventBody', 'senderName', 'timeLabel',
@@ -58,7 +51,6 @@ console.log(`  events with data-event-urn: ${urns}, marked as other person: ${ot
 const send = page.getByRole('button', { name: SEL.sendButtonName });
 console.log(`  send button (role): ${await send.count()}`);
 
-// Class names of the first event item: lets us fix selectors without exposing content.
 const classes = await page
   .locator(SEL.messageEvent.join(', '))
   .first()

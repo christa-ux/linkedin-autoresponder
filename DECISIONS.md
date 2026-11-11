@@ -23,3 +23,7 @@ One line each. Newest at the bottom of each section.
 - Invitation selectors confirmed live: card = `[data-view-name="pending-invitation"]`, Accept = role button named /^accept/.
 - Only person invitations are accepted: aria-labels mentioning follow/event/newsletter/group are skipped.
 - `/messaging/thread/new/` is LinkedIn's compose screen; the bot must never type there (reply-only).
+- tsx/esbuild injects `__name()` into functions passed to page.evaluate; a no-op init script defines it in every page.
+- Anthropic auth via `ant auth login` profile (no key in .env); an empty ANTHROPIC_API_KEY is treated as unset.
+- Replies are inserted in one go and checked in the composer before Send: key-by-key typing got cut off mid-reply live.
+- Phase 4 verified live: "hey" answered in ~9-10 s, image+link burst answered once (vision ok), 3 quick messages -> 1 reply (~13 s from first), restart -> no duplicates.

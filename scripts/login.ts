@@ -1,8 +1,4 @@
-/**
- * One-time manual login. Opens a real browser window on the persistent profile;
- * you type your credentials / 2FA yourself. Nothing is read or stored by this script
- * except the browser's own profile directory (git-ignored).
- */
+/** One-time manual login; you type credentials/2FA yourself. */
 import { config } from '../src/config.js';
 import { isBlocked, openContext } from '../src/browser/session.js';
 import { URLS } from '../src/browser/selectors.js';

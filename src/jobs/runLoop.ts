@@ -4,21 +4,17 @@ import { SessionError } from '../browser/session.js';
 
 export const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-/** Last tick time per job; the watchdog reads this. */
 export const heartbeats = new Map<string, number>();
 
 let lastNotify = 0;
-/** Loud local alert when only a human can fix things (expired session / checkpoint). macOS only, best effort. */
+/** macOS notification for problems only a human can fix. */
 export function notifyHuman(message: string): void {
   if (process.platform !== 'darwin' || Date.now() - lastNotify < 10 * 60_000) return;
   lastNotify = Date.now();
   execFile('osascript', ['-e', `display notification ${JSON.stringify(message)} with title "LinkedIn bot" sound name "Basso"`], () => undefined);
 }
 
-/**
- * Run `tick` forever every `intervalMs`. A normal error is logged and the loop continues:
- * the process must never exit on a routine failure.
- */
+/** Errors are logged and the loop continues: the process never exits on a routine failure. */
 export async function runLoop(
   name: string,
   intervalMs: number,

@@ -13,10 +13,6 @@ export interface Self {
   profileUrl: string;
 }
 
-/**
- * Persistent profile = the logged-in session. The directory holds LinkedIn cookies, so it is
- * git-ignored and locked to the current OS user (0700). No stealth flags: we don't hide automation.
- */
 export async function openContext(userDataDir: string, headless: boolean): Promise<BrowserContext> {
   fs.mkdirSync(userDataDir, { recursive: true, mode: 0o700 });
   fs.chmodSync(userDataDir, 0o700);
@@ -24,6 +20,8 @@ export async function openContext(userDataDir: string, headless: boolean): Promi
     headless,
     viewport: { width: 1280, height: 900 },
   });
+  // tsx injects __name() into functions sent to page.evaluate; define it in the page.
+  await ctx.addInitScript('globalThis.__name = globalThis.__name || ((fn) => fn);');
   ctx.setDefaultTimeout(15_000);
   ctx.setDefaultNavigationTimeout(45_000);
   return ctx;
@@ -37,13 +35,11 @@ export function assertLoggedIn(page: Page): void {
   if (isBlocked(page.url())) throw new SessionError(page.url());
 }
 
-/** Navigate, then make sure LinkedIn didn't bounce us to login / checkpoint. */
 export async function gotoChecked(page: Page, url: string): Promise<void> {
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   assertLoggedIn(page);
 }
 
-/** Our own name and profile URL, used to tell "me" from "them". */
 export async function readSelf(page: Page): Promise<Self> {
   await gotoChecked(page, URLS.me);
   await page.waitForURL(/\/in\/(?!me\/)[^/]+/, { timeout: 20_000 }).catch(() => undefined);
@@ -52,7 +48,7 @@ export async function readSelf(page: Page): Promise<Self> {
   return { name, profileUrl: page.url().split('?')[0]! };
 }
 
-/** Profile tab titles look like "(3) Jane Doe | LinkedIn"; more stable than the page markup. */
+/** "(3) Jane Doe | LinkedIn" -> "Jane Doe" */
 export function nameFromTitle(title: string): string {
   return title.replace(/^\(\d+\+?\)\s*/, '').replace(/\s*\|\s*LinkedIn\s*$/i, '').trim();
 }

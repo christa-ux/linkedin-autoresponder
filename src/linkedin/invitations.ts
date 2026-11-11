@@ -4,20 +4,15 @@ import { dismissModals } from '../browser/dismissModals.js';
 import { SEL, URLS, any } from '../browser/selectors.js';
 import { gotoChecked } from '../browser/session.js';
 
-/**
- * Reload the received-invitations page and click every Accept right away.
- * Returns an opaque key per accepted invite (the button label; the caller hashes it before storing).
- * Never sends a message after accepting (reply-only rule).
- */
+/** Accepts every person invitation. Never sends a message afterwards. */
 export async function acceptPendingInvitations(page: Page): Promise<string[]> {
   await gotoChecked(page, URLS.invitations);
   const accept = page.getByRole('button', { name: SEL.acceptButtonName });
-  // Either an Accept button shows up, or the page is simply empty: don't wait the full timeout twice.
   await accept.first().waitFor({ state: 'visible', timeout: 6_000 }).catch(() => undefined);
   await dismissModals(page);
 
   const accepted: string[] = [];
-  // Re-query after each click: the list re-renders when a card is accepted.
+  // The list re-renders after each accept.
   for (let guard = 0; guard < 25; guard++) {
     const buttons = await accept.all();
     let clicked = false;
@@ -30,7 +25,7 @@ export async function acceptPendingInvitations(page: Page): Promise<string[]> {
       accepted.push(label || `invite-${Date.now()}`);
       logger.info({ count: accepted.length }, 'accepted invitation');
       clicked = true;
-      await dismissModals(page); // e.g. a "say hello" prompt; we never use it
+      await dismissModals(page);
       break;
     }
     if (!clicked) break;

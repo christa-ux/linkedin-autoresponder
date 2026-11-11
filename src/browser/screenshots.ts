@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Page } from 'playwright';
 
-const DIR = 'screenshots'; // git-ignored: may contain other people's content
+const DIR = 'screenshots';
 const KEEP = 20;
 
-/** Debug screenshot on failure; keeps only the newest few so personal data doesn't pile up on disk. */
+/** Keeps only the newest screenshots: they can contain personal data. */
 export async function errorScreenshot(page: Page, label: string): Promise<void> {
   fs.mkdirSync(DIR, { recursive: true, mode: 0o700 });
   await page.screenshot({ path: path.join(DIR, `${Date.now()}-${label}.png`), timeout: 5_000 }).catch(() => undefined);

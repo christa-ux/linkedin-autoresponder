@@ -3,7 +3,7 @@ import type { DB } from './db.js';
 
 export const hash = (s: string): string => createHash('sha256').update(s).digest('hex');
 
-/** All persistence goes through here. Keys are hashed so the DB never holds message content or names. */
+/** Keys are hashed: the DB never holds message content or names. */
 export class Repo {
   constructor(private readonly db: DB) {}
 

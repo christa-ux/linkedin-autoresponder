@@ -4,6 +4,11 @@ import { URLS } from './browser/selectors.js';
 import { errorScreenshot } from './browser/screenshots.js';
 import { SessionError, gotoChecked, openContext, readSelf } from './browser/session.js';
 import { invitationsTick } from './jobs/invitationsJob.js';
+import { MessagesJob } from './jobs/messagesJob.js';
+import { PlaywrightClient } from './linkedin/LinkedInClient.js';
+import { AnthropicLlm } from './responder/llm.js';
+import { buildPersona } from './responder/persona.js';
+import { Responder } from './responder/responder.js';
 import { runLoop } from './jobs/runLoop.js';
 import { openDb } from './state/db.js';
 import { Repo } from './state/repo.js';
@@ -19,7 +24,6 @@ async function main(): Promise<void> {
   const self = await readSelf(invitesTab);
   logger.info({ profileUrl: self.profileUrl }, `Logged in as ${self.name || '(name not found)'}`);
 
-  // Two long-lived tabs: A = invitations, B = messaging.
   const messagesTab = await ctx.newPage();
   await gotoChecked(messagesTab, URLS.messaging);
 
@@ -32,10 +36,25 @@ async function main(): Promise<void> {
   process.on('SIGINT', () => void shutdown('SIGINT'));
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
-  await runLoop('invitations', config.INVITES_POLL_SECONDS * 1000, invitationsTick(invitesTab, repo), {
-    isStopped: () => stopped,
-    onError: () => errorScreenshot(invitesTab, 'invitations'),
-  });
+  if (!config.ANTHROPIC_API_KEY) logger.warn('ANTHROPIC_API_KEY not set: using the `ant auth login` profile if present (check with `ant auth status`)');
+  const llm = new AnthropicLlm(config.LLM_MODEL, config.LLM_FALLBACK_MODEL, config.LLM_TIMEOUT_MS, config.ANTHROPIC_API_KEY);
+  const responder = new Responder(llm, buildPersona(config, self.name));
+  const client = new PlaywrightClient(invitesTab, messagesTab, config.MAX_TYPING_MS);
+  const messages = new MessagesJob(client, responder, repo, config);
+
+  await Promise.all([
+    runLoop('invitations', config.INVITES_POLL_SECONDS * 1000, invitationsTick(invitesTab, repo), {
+      isStopped: () => stopped,
+      onError: () => errorScreenshot(invitesTab, 'invitations'),
+    }),
+    runLoop('messages', config.MESSAGES_POLL_SECONDS * 1000, messages.tick, {
+      isStopped: () => stopped,
+      onError: async () => {
+        await errorScreenshot(messagesTab, 'messages');
+        await gotoChecked(messagesTab, URLS.messaging);
+      },
+    }),
+  ]);
 }
 
 main().catch((err) => {

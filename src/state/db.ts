@@ -6,12 +6,12 @@ export type DB = Database.Database;
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS handled_messages (
-  key        TEXT PRIMARY KEY,   -- sha256 of the message key; no content stored
+  key        TEXT PRIMARY KEY,
   thread_key TEXT NOT NULL,
   handled_at INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS accepted_invites (
-  key         TEXT PRIMARY KEY,  -- sha256 of the invitation identity
+  key         TEXT PRIMARY KEY,
   accepted_at INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS thread_state (
