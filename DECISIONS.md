@@ -34,3 +34,4 @@ One line each. Newest at the bottom of each section.
 - caffeinate is spawned by the bot itself (tied to its PID), so "keep awake" can't be forgotten.
 - Claude API credentials checked at start and every 30 min via models.retrieve (no tokens spent); failure -> loud log + macOS notification.
 - Messaging tab reloaded every 30 min to keep memory flat over 24 h.
+- Phase 6 verified live: Cmd+Q on Chromium -> back online in ~9 s; pm2 restart -> no duplicate replies. Phase 8: README note; fresh clone installs and passes.
