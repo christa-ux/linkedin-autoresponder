@@ -15,7 +15,7 @@ const schema = z.object({
   HEADLESS: bool,
   USER_DATA_DIR: z.string().default('./user-data'),
 
-  INVITES_POLL_SECONDS: z.coerce.number().positive().default(25),
+  INVITES_POLL_SECONDS: z.coerce.number().positive().default(20),
   MESSAGES_POLL_SECONDS: z.coerce.number().positive().default(6),
   BURST_SETTLE_MS: z.coerce.number().int().nonnegative().default(5000),
   BURST_MAX_WAIT_MS: z.coerce.number().int().positive().default(15000),

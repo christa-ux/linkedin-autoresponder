@@ -1,10 +1,18 @@
 import { config } from './config.js';
 import { logger } from './logger.js';
 import { URLS } from './browser/selectors.js';
+import { errorScreenshot } from './browser/screenshots.js';
 import { SessionError, gotoChecked, openContext, readSelf } from './browser/session.js';
+import { invitationsTick } from './jobs/invitationsJob.js';
+import { runLoop } from './jobs/runLoop.js';
+import { openDb } from './state/db.js';
+import { Repo } from './state/repo.js';
+
+let stopped = false;
 
 async function main(): Promise<void> {
   logger.info({ dryRun: config.DRY_RUN, headless: config.HEADLESS }, 'starting');
+  const repo = new Repo(openDb(config.DB_PATH));
   const ctx = await openContext(config.USER_DATA_DIR, config.HEADLESS);
 
   const invitesTab = ctx.pages()[0] ?? (await ctx.newPage());
@@ -12,18 +20,22 @@ async function main(): Promise<void> {
   logger.info({ profileUrl: self.profileUrl }, `Logged in as ${self.name || '(name not found)'}`);
 
   // Two long-lived tabs: A = invitations, B = messaging.
-  await gotoChecked(invitesTab, URLS.invitations);
   const messagesTab = await ctx.newPage();
   await gotoChecked(messagesTab, URLS.messaging);
-  logger.info('invitations and messaging tabs open');
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'shutting down');
+    stopped = true;
     await ctx.close().catch(() => undefined);
     process.exit(0);
   };
   process.on('SIGINT', () => void shutdown('SIGINT'));
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
+
+  await runLoop('invitations', config.INVITES_POLL_SECONDS * 1000, invitationsTick(invitesTab, repo), {
+    isStopped: () => stopped,
+    onError: () => errorScreenshot(invitesTab, 'invitations'),
+  });
 }
 
 main().catch((err) => {

@@ -16,3 +16,10 @@ One line each. Newest at the bottom of each section.
 
 ## TIME_LOG
 - 20:40 start. Phase 1 scaffold + responder core + tests: 20:47. (User handles all git commits/pushes.)
+- Phase 2 (session, login/inspect, selectors) verified live: login + `npm start` OK.
+- Phase 3 (accept invitations) written; polls every 20 s with a page reload.
+
+## Phase 3 notes
+- Invitation selectors confirmed live: card = `[data-view-name="pending-invitation"]`, Accept = role button named /^accept/.
+- Only person invitations are accepted: aria-labels mentioning follow/event/newsletter/group are skipped.
+- `/messaging/thread/new/` is LinkedIn's compose screen; the bot must never type there (reply-only).

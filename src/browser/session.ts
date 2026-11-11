@@ -47,6 +47,12 @@ export async function gotoChecked(page: Page, url: string): Promise<void> {
 export async function readSelf(page: Page): Promise<Self> {
   await gotoChecked(page, URLS.me);
   await page.waitForURL(/\/in\/(?!me\/)[^/]+/, { timeout: 20_000 }).catch(() => undefined);
-  const name = (await page.locator(any(SEL.profileName)).first().textContent({ timeout: 10_000 }).catch(() => ''))?.trim() ?? '';
+  let name = (await page.locator(any(SEL.profileName)).first().textContent({ timeout: 5_000 }).catch(() => ''))?.trim() ?? '';
+  if (!name) name = nameFromTitle(await page.title());
   return { name, profileUrl: page.url().split('?')[0]! };
+}
+
+/** Profile tab titles look like "(3) Jane Doe | LinkedIn"; more stable than the page markup. */
+export function nameFromTitle(title: string): string {
+  return title.replace(/^\(\d+\+?\)\s*/, '').replace(/\s*\|\s*LinkedIn\s*$/i, '').trim();
 }
