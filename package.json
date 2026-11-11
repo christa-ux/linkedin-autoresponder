@@ -1,0 +1,38 @@
+{
+  "name": "linkedin-autoresponder",
+  "version": "1.0.0",
+  "description": "Reply-only LinkedIn auto-responder: accepts invitations and answers DMs",
+  "scripts": {
+    "test": "vitest run",
+    "start": "tsx src/index.ts",
+    "login": "tsx scripts/login.ts",
+    "inspect": "tsx scripts/inspect.ts",
+    "typecheck": "tsc --noEmit",
+    "bot:start": "pm2 start ecosystem.config.cjs",
+    "bot:logs": "pm2 logs linkedin-bot",
+    "bot:stop": "pm2 stop linkedin-bot",
+    "bot:status": "pm2 status"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^18.0.10",
+    "pino": "^10.4.0",
+    "pino-pretty": "^13.2.0",
+    "playwright": "^1.65.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^26.6.6",
+    "pm2": "^7.1.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "type": "module",
+  "private": "true",
+  "engines": {
+    "node": ">=20"
+  }
+}

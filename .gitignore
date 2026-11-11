@@ -1,0 +1,19 @@
+# secrets
+.env
+.env.*
+!.env.example
+# browser profile = LinkedIn session cookies. NEVER commit.
+user-data/
+storage-state*.json
+# runtime state / personal data
+data/
+*.db
+*.db-*
+logs/
+screenshots/
+*.log
+# build
+node_modules/
+dist/
+coverage/
+.DS_Store
